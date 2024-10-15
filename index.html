@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV/Resume Builder</title>
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --secondary: #50e3c2;
+            --background: #f0f4f8;
+            --card-bg: #ffffff;
+            --text: #333333;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--background);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            color: var(--primary);
+        }
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        textarea {
+            height: 100px;
+        }
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #3a7bd5;
+        }
+        .education-entry, .experience-entry {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        .remove-btn {
+            background-color: #e74c3c;
+            margin-top: 10px;
+        }
+        .remove-btn:hover {
+            background-color: #c0392b;
+        }
+        .help-icon {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 18px;
+            font-size: 12px;
+            cursor: help;
+            margin-left: 5px;
+        }
+        .help-icon:hover {
+            background-color: #3a7bd5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CV/Resume Builder</h1>
+        <form id="cv-form">
+            <div class="form-group">
+                <label for="name">Full Name <span class="help-icon" title="Enter your full name as you want it to appear on your resume">?</span></label>
+                <input type="text" id="name" name="name" required placeholder="e.g., John Doe">
+            </div>
+            <div class="form-group">
+                <label for="email">Email <span class="help-icon" title="Enter your professional email address">?</span></label>
+                <input type="email" id="email" name="email" required placeholder="e.g., johndoe@example.com">
+            </div>
+            <div class="form-group">
+                <label for="phone">Phone <span class="help-icon" title="Enter your contact phone number">?</span></label>
+                <input type="tel" id="phone" name="phone" required placeholder="e.g., (123) 456-7890">
+            </div>
+            <div class="form-group">
+                <label for="summary">Professional Summary <span class="help-icon" title="Write a brief summary of your professional background and key strengths">?</span></label>
+                <textarea id="summary" name="summary" required placeholder="e.g., Experienced software developer with 5+ years of expertise in..."></textarea>
+            </div>
+            <div class="form-group">
+                <h2>Education <span class="help-icon" title="Add your educational background, starting with the most recent">?</span></h2>
+                <div id="education-container"></div>
+                <button type="button" id="add-education">Add Education</button>
+            </div>
+            <div class="form-group">
+                <h2>Work Experience <span class="help-icon" title="Add your work experience, starting with the most recent">?</span></h2>
+                <div id="experience-container"></div>
+                <button type="button" id="add-experience">Add Experience</button>
+            </div>
+            <div class="form-group">
+                <label for="skills">Skills <span class="help-icon" title="List your key skills, separated by commas">?</span></label>
+                <input type="text" id="skills" name="skills" required placeholder="e.g., JavaScript, React, Node.js, Python">
+            </div>
+            <button type="button" id="generate-pdf">Generate PDF</button>
+        </form>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        const addEducationBtn = document.getElementById('add-education');
+        const addExperienceBtn = document.getElementById('add-experience');
+        const generatePDFBtn = document.getElementById('generate-pdf');
+        const educationContainer = document.getElementById('education-container');
+        const experienceContainer = document.getElementById('experience-container');
+
+        function createEducationEntry() {
+            const entry = document.createElement('div');
+            entry.className = 'education-entry';
+            entry.innerHTML = `
+                <input type="text" placeholder="e.g., Bachelor of Science in Computer Science" required title="Enter your degree or qualification">
+                <input type="text" placeholder="e.g., University of Example" required title="Enter the name of the institution">
+                <input type="text" placeholder="e.g., 2015-2019" required title="Enter the years of study or graduation year">
+                <button type="button" class="remove-btn">Remove</button>
+            `;
+            entry.querySelector('.remove-btn').addEventListener('click', () => entry.remove());
+            return entry;
+        }
+
+        function createExperienceEntry() {
+            const entry = document.createElement('div');
+            entry.className = 'experience-entry';
+            entry.innerHTML = `
+                <input type="text" placeholder="e.g., Senior Software Developer" required title="Enter your job title">
+                <input type="text" placeholder="e.g., Tech Solutions Inc." required title="Enter the company name">
+                <input type="text" placeholder="e.g., 2019-Present" required title="Enter the years of employment">
+                <textarea placeholder="e.g., Led a team of 5 developers in creating..." required title="Describe your key responsibilities and achievements"></textarea>
+                <button type="button" class="remove-btn">Remove</button>
+            `;
+            entry.querySelector('.remove-btn').addEventListener('click', () => entry.remove());
+            return entry;
+        }
+
+        addEducationBtn.addEventListener('click', () => {
+            educationContainer.appendChild(createEducationEntry());
+        });
+
+        addExperienceBtn.addEventListener('click', () => {
+            experienceContainer.appendChild(createExperienceEntry());
+        });
+
+        generatePDFBtn.addEventListener('click', () => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Set font styles
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(20);
+
+            // Add name
+            const name = document.getElementById('name').value;
+            doc.text(name, 105, 20, null, null, 'center');
+
+            // Add contact info
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(12);
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            doc.text(`Email: ${email} | Phone: ${phone}`, 105, 30, null, null, 'center');
+
+            // Add summary
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(16);
+            doc.text("Professional Summary", 20, 45);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(12);
+            const summary = document.getElementById('summary').value;
+            const summaryLines = doc.splitTextToSize(summary, 170);
+            doc.text(summaryLines, 20, 55);
+
+            // Add education
+            let yPos = 55 + summaryLines.length * 7;
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(16);
+            doc.text("Education", 20, yPos);
+            yPos += 10;
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(12);
+            document.querySelectorAll('.education-entry').forEach(entry => {
+                const inputs = entry.querySelectorAll('input');
+                const educationText = `${inputs[0].value}, ${inputs[1].value}, ${inputs[2].value}`;
+                doc.text(educationText, 20, yPos);
+                yPos += 10;
+            });
+
+            // Add experience
+            yPos += 5;
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(16);
+            doc.text("Work Experience", 20, yPos);
+            yPos += 10;
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(12);
+            document.querySelectorAll('.experience-entry').forEach(entry => {
+                const inputs = entry.querySelectorAll('input');
+                const textarea = entry.querySelector('textarea');
+                doc.setFont("helvetica", "bold");
+                doc.text(`${inputs[0].value} - ${inputs[1].value}, ${inputs[2].value}`, 20, yPos);
+                yPos += 7;
+                doc.setFont("helvetica", "normal");
+                const descLines = doc.splitTextToSize(textarea.value, 170);
+                doc.text(descLines, 20, yPos);
+                yPos += descLines.length * 7 + 5;
+            });
+
+            // Add skills
+            yPos += 5;
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(16);
+            doc.text("Skills", 20, yPos);
+            yPos += 10;
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(12);
+            const skills = document.getElementById('skills').value;
+            const skillsLines = doc.splitTextToSize(skills, 170);
+            doc.text(skillsLines, 20, yPos);
+
+            // Save the PDF
+            doc.save("resume.pdf");
+        });
+
+        // Initialize with one education and one experience entry
+        educationContainer.appendChild(createEducationEntry());
+        experienceContainer.appendChild(createExperienceEntry());
+    </script>
+</body>
+</html>
